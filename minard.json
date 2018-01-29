@@ -1,0 +1,7 @@
+{
+  "publicRoot": "dist",
+  "build": {
+    "image": "node:8",
+    "commands": ["yarn", "NODE_ENV=staging yarn run build"]
+  }
+}
