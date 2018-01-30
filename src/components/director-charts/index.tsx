@@ -5,7 +5,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import { StateTree } from '../../reducers/index';
-import { getDirectorData } from '../../selectors/index';
+import { getDirectorData, getYearExtent } from '../../selectors/index';
 import { Directors } from '../../types';
 import { DirectorChart } from './director-chart';
 
@@ -16,6 +16,7 @@ interface PassedProps {
 
 interface StateProps {
   directorData: Directors;
+  yearExtent: [number, number];
 }
 
 interface DispatchProps {}
@@ -51,10 +52,10 @@ class DirectorChartsPlain extends React.Component<Props> {
     return minYearA - minYearB;
   };
   public render() {
-    const { directorData, width } = this.props;
+    const { directorData, width, yearExtent } = this.props;
     const height = 100;
     const xScale = scaleLinear()
-      .domain([1872, 2018])
+      .domain(yearExtent)
       .range([0, width]);
     const yScale = scaleLinear()
       .domain([0, 10])
@@ -92,5 +93,6 @@ class DirectorChartsPlain extends React.Component<Props> {
 export const DirectorCharts = connect<StateProps, DispatchProps, {}, StateTree>(
   state => ({
     directorData: getDirectorData(state),
+    yearExtent: getYearExtent(state),
   }),
 )(DirectorChartsPlain);
