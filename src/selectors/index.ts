@@ -1,4 +1,4 @@
-import { values } from 'lodash';
+import { mapValues, max, uniq, values } from 'lodash';
 import { createSelector } from 'reselect';
 import { StateTree } from '../reducers';
 
@@ -34,10 +34,7 @@ export const getYearExtent = createSelector(
             Math.min(
               ...values(dataForDirectors.directorsInfo)
                 .map(
-                  info =>
-                    info.birthYear !== undefined
-                      ? parseInt(info.birthYear, 10)
-                      : -1,
+                  info => (info.birthYear !== undefined ? info.birthYear : -1),
                 )
                 .filter(d => !isNaN(d) && d !== -1),
             ),
@@ -49,14 +46,11 @@ export const getYearExtent = createSelector(
           );
           result[0] = min !== -1 ? Math.min(result[0], min) : result[0];
 
-          const max = Math.max(
+          const maxValue = Math.max(
             Math.max(
               ...values(dataForDirectors.directorsInfo)
                 .map(
-                  info =>
-                    info.deathYear !== undefined
-                      ? parseInt(info.deathYear, 10)
-                      : -1,
+                  info => (info.deathYear !== undefined ? info.deathYear : -1),
                 )
                 .filter(d => !isNaN(d) && d !== -1),
               Math.max(
@@ -66,7 +60,8 @@ export const getYearExtent = createSelector(
               ),
             ),
           );
-          result[1] = max !== -1 ? Math.max(result[1], max) : result[1];
+          result[1] =
+            maxValue !== -1 ? Math.max(result[1], maxValue) : result[1];
           return result;
         },
         [Infinity, -Infinity],
@@ -76,45 +71,33 @@ export const getYearExtent = createSelector(
   },
 );
 
-// export const getRatingExtent = createSelector(
-//   getDirectorData,
-//   (directorData) => {
-//     return [0, 10];
-//   },
-// );
-
-// function toLineChartData(
-//   id: string,
-//   label: string,
-//   periods: Period[],
-//   data: { [period: string]: PeriodData },
-// ) {
-//   return {
-//     id,
-//     label: id === FINLAND_ID ? 'Suomi' : label,
-//     color:
-//       id === FINLAND_ID
-//         ? colors.blue.toString()
-//         : schemeCategory10[stringToNumberHash(id) % schemeCategory10.length],
-//     series: periods.map(({ id: periodId, start, end }) => {
-//       return {
-//         value: data[periodId] && data[periodId].value,
-//         interpolated: data[periodId] && data[periodId].interpolated,
-//         start,
-//         end,
-//       };
-//     }),
-//   };
-// }
-
-// export const getPercentageLineChartData = createSelector(
-//   getPercentageHistoryForHoveredAndSelectedMunicipalities,
-//   getMunicipalities,
-//   getPeriods,
-//   (selectedAndHoveredData, municipalities, periods) =>
-//     selectedAndHoveredData
-//       ? selectedAndHoveredData.map(({ id, data }) =>
-//           toLineChartData(id, municipalities[id], periods, data),
-//         )
-//       : undefined,
-// );
+export const getLineChartData = createSelector(
+  getDirectorData,
+  directors =>
+    directors &&
+    mapValues(directors, directorData => {
+      const movieYears = uniq(
+        values(directorData.movies).map(title => title.year),
+      ).filter(d => !isNaN(d));
+      return {
+        id: directorData.directorIds,
+        birthYears: values(directorData.directorsInfo).map(
+          info => info.birthYear,
+        ),
+        deathYears: values(directorData.directorsInfo).map(
+          info => info.deathYear,
+        ),
+        movieYears,
+        series: movieYears.map(year => {
+          return {
+            value: max(
+              values(directorData.movies)
+                .filter(title => title.year === year)
+                .map(title => title.averageRating),
+            ),
+            year,
+          };
+        }),
+      };
+    }),
+);

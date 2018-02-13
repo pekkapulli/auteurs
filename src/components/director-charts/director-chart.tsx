@@ -1,12 +1,27 @@
 import { RGBColor } from 'd3-color';
 import { ScaleLinear } from 'd3-scale';
+import { curveMonotoneX, line } from 'd3-shape';
 import * as React from 'react';
 import styled from 'styled-components';
 import { theme } from '../../theme';
 import { DirectorData } from '../../types';
 
+interface Datum {
+  value: number | undefined;
+  year: number;
+}
+
+export interface LineChartData {
+  id: string;
+  birthYears: Array<number | undefined>;
+  deathYears: Array<number | undefined>;
+  movieYears: number[];
+  series: Datum[];
+}
+
 interface PassedProps {
   directorData: DirectorData;
+  lineChartData: LineChartData;
   width: number;
   height: number;
   xScale: ScaleLinear<number, number>;
@@ -35,6 +50,10 @@ const DirectorNameText = styled.text`
   ${theme.fontBold};
 `;
 
+function sortSeries(a: Datum, b: Datum) {
+  return a.year - b.year;
+}
+
 export class DirectorChart extends React.Component<Props> {
   public render() {
     const {
@@ -44,7 +63,15 @@ export class DirectorChart extends React.Component<Props> {
       xScale,
       yScale,
       colorScale,
+      lineChartData,
     } = this.props;
+
+    const lineGenerator = line<Datum>()
+      .curve(curveMonotoneX)
+      .x(d => xScale(d.year))
+      .y(d => (d.value ? yScale(d.value) : yScale(5)));
+
+    // console.log(directorData.directorsInfo, ': ', lineChartData.series);
 
     return (
       <Main>
@@ -54,11 +81,11 @@ export class DirectorChart extends React.Component<Props> {
               const directorInfo = directorData.directorsInfo[directorId];
               const birthYear =
                 directorInfo.birthYear !== undefined
-                  ? parseInt(directorInfo.birthYear, 10)
+                  ? directorInfo.birthYear
                   : undefined;
               const deathYear =
                 directorInfo.deathYear !== undefined
-                  ? parseInt(directorInfo.deathYear, 10)
+                  ? directorInfo.deathYear
                   : undefined;
               return (
                 <g key={directorId}>
@@ -91,6 +118,14 @@ export class DirectorChart extends React.Component<Props> {
                 </g>
               );
             })}
+          </g>
+          <g>
+            <path
+              strokeWidth={2}
+              stroke="gray"
+              fill="transparent"
+              d={lineGenerator(lineChartData.series.sort(sortSeries))!}
+            />
           </g>
           <g>
             {Object.keys(directorData.movies).map(titleId => {

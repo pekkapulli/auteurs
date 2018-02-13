@@ -5,9 +5,9 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import { StateTree } from '../../reducers/index';
-import { getDirectorData, getYearExtent } from '../../selectors/index';
+import { getDirectorData, getLineChartData, getYearExtent } from '../../selectors/index';
 import { Directors } from '../../types';
-import { DirectorChart } from './director-chart';
+import { DirectorChart, LineChartData } from './director-chart';
 
 interface PassedProps {
   width: number;
@@ -16,6 +16,7 @@ interface PassedProps {
 
 interface StateProps {
   directorData: Directors;
+  lineChartData: {[directorIds: string]: LineChartData};
   yearExtent: [number, number];
 }
 
@@ -51,8 +52,9 @@ class DirectorChartsPlain extends React.Component<Props> {
     );
     return minYearA - minYearB;
   };
+
   public render() {
-    const { directorData, width, yearExtent } = this.props;
+    const { directorData, width, yearExtent, lineChartData } = this.props;
     const height = 100;
     const xScale = scaleLinear()
       .domain(yearExtent)
@@ -63,7 +65,7 @@ class DirectorChartsPlain extends React.Component<Props> {
     const colorScale = scaleLinear<RGBColor, string>()
       .domain([0, 10])
       .interpolate(interpolateHcl)
-      .range([rgb('#007AFF'), rgb('#FFF500')]);
+      .range([rgb('#237A70'), rgb('#FFCA5A')]);
 
     return (
       <Main>
@@ -79,6 +81,7 @@ class DirectorChartsPlain extends React.Component<Props> {
                   yScale={yScale}
                   colorScale={colorScale}
                   directorData={directorData[directorIds]}
+                  lineChartData={lineChartData[directorIds]}
                 />
               </ChartContainer>
             ))
@@ -93,6 +96,7 @@ class DirectorChartsPlain extends React.Component<Props> {
 export const DirectorCharts = connect<StateProps, DispatchProps, {}, StateTree>(
   state => ({
     directorData: getDirectorData(state),
+    lineChartData: getLineChartData(state),
     yearExtent: getYearExtent(state),
   }),
 )(DirectorChartsPlain);

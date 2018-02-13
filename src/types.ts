@@ -7,8 +7,8 @@ export interface DirectorData {
   directorsInfo: {
     [id: string]: {
       name: string;
-      birthYear?: string;
-      deathYear?: string;
+      birthYear?: number;
+      deathYear?: number;
     };
   };
   movies: { [tconst: string]: MovieData };
