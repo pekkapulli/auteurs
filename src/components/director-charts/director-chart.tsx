@@ -4,7 +4,7 @@ import { curveMonotoneX, line } from 'd3-shape';
 import * as React from 'react';
 import styled from 'styled-components';
 import { theme } from '../../theme';
-import { DirectorData } from '../../types';
+import { DirectorData, MovieData } from '../../types';
 
 interface Datum {
   value: number | undefined;
@@ -42,7 +42,7 @@ const Main = styled.div`
 
 const Graph = styled.svg`
   width: 100%;
-  overflow: visible;
+  overflow: visible !important;
 `;
 
 const DirectorNameText = styled.text`
@@ -71,12 +71,22 @@ export class DirectorChart extends React.Component<Props> {
       .x(d => xScale(d.year))
       .y(d => (d.value ? yScale(d.value) : yScale(5)));
 
+    const compareTitles = (aMovieData: MovieData, bMovieData: MovieData) => {
+      if (!aMovieData.averageRating) {
+        return -1;
+      }
+      if (!bMovieData.averageRating) {
+        return 1;
+      }
+      return aMovieData.averageRating - bMovieData.averageRating;
+    };
+
     // console.log(directorData.directorsInfo, ': ', lineChartData.series);
 
     return (
       <Main>
         <Graph width={width} height={height}>
-          <g>
+          <g style={{ overflow: 'visible' }}>
             {Object.keys(directorData.directorsInfo).map(directorId => {
               const directorInfo = directorData.directorsInfo[directorId];
               const birthYear =
@@ -121,30 +131,39 @@ export class DirectorChart extends React.Component<Props> {
           </g>
           <g>
             <path
-              strokeWidth={2}
-              stroke="gray"
+              strokeWidth={3}
+              stroke="#444"
               fill="transparent"
               d={lineGenerator(lineChartData.series.sort(sortSeries))!}
             />
           </g>
           <g>
-            {Object.keys(directorData.movies).map(titleId => {
-              const title = directorData.movies[titleId];
-              const year = title.year;
-              const rating = title.averageRating;
-              return !isNaN(year) ? (
-                <circle
-                  key={`title-${titleId}`}
-                  cx={xScale(year)}
-                  cy={rating ? yScale(rating) : height / 2}
-                  r={rating ? 3 : 3}
-                  fillOpacity="1"
-                  fill={rating ? colorScale(rating) : 'black'}
-                />
-              ) : (
-                undefined
-              );
-            })}
+            {Object.keys(directorData.movies)
+              .sort((aTitleId: string, bTitleId: string) =>
+                compareTitles(
+                  directorData.movies[aTitleId],
+                  directorData.movies[bTitleId],
+                ),
+              )
+              .map(titleId => {
+                const title = directorData.movies[titleId];
+                const year = title.year;
+                const rating = title.averageRating;
+                return !isNaN(year) ? (
+                  <circle
+                    key={`title-${titleId}`}
+                    cx={xScale(year)}
+                    cy={rating ? yScale(rating) : yScale(3)}
+                    r={rating ? 3 : 3}
+                    fillOpacity="1"
+                    fill={rating ? colorScale(rating) : '#555'}
+                    strokeWidth={1}
+                    stroke="#333"
+                  />
+                ) : (
+                  undefined
+                );
+              })}
           </g>
         </Graph>
       </Main>

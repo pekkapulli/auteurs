@@ -77,7 +77,9 @@ export const getLineChartData = createSelector(
     directors &&
     mapValues(directors, directorData => {
       const movieYears = uniq(
-        values(directorData.movies).map(title => title.year),
+        values(directorData.movies)
+          .filter(title => title.averageRating !== undefined)
+          .map(title => title.year),
       ).filter(d => !isNaN(d));
       return {
         id: directorData.directorIds,

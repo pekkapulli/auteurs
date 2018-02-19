@@ -60,7 +60,7 @@ class DirectorChartsPlain extends React.Component<Props> {
       .domain(yearExtent)
       .range([0, width]);
     const yScale = scaleLinear()
-      .domain([0, 10])
+      .domain([3, 10])
       .range([height, 0]);
     const colorScale = scaleLinear<RGBColor, string>()
       .domain([0, 10])
@@ -71,6 +71,7 @@ class DirectorChartsPlain extends React.Component<Props> {
       <Main>
         {directorData ? (
           Object.keys(directorData)
+            .filter(directorIds => Object.keys(directorData[directorIds].movies).length >= 3)
             .sort(this.sortDirectorData)
             .map(directorIds => (
               <ChartContainer key={directorIds}>
