@@ -1,6 +1,7 @@
 import { RGBColor } from 'd3-color';
 import { ScaleLinear } from 'd3-scale';
 import { curveMonotoneX, line } from 'd3-shape';
+import { max } from 'lodash';
 import * as React from 'react';
 import styled from 'styled-components';
 import { theme } from '../../theme';
@@ -50,6 +51,11 @@ const DirectorNameText = styled.text`
   ${theme.fontBold};
 `;
 
+const YearText = styled.text`
+  fill: #888;
+  ${theme.fontNormal};
+`;
+
 function sortSeries(a: Datum, b: Datum) {
   return a.year - b.year;
 }
@@ -82,6 +88,22 @@ export class DirectorChart extends React.Component<Props> {
     };
 
     // console.log(directorData.directorsInfo, ': ', lineChartData.series);
+    const dataSeries = lineChartData.series.filter(d => {
+      const deathYear = max(lineChartData.deathYears);
+      return deathYear ? deathYear >= d.year : true;
+    });
+    const firstValue = dataSeries.sort((d1, d2) => d1.year - d2.year)[0].value;
+    const lastValue = dataSeries.sort((d1, d2) => d2.year - d1.year)[0].value;
+    lineChartData.birthYears.forEach(year => {
+      if (year) {
+        dataSeries.push({ value: firstValue, year });
+      }
+    });
+    lineChartData.deathYears.forEach(year => {
+      if (year) {
+        dataSeries.push({ value: lastValue, year });
+      }
+    });
 
     return (
       <Main>
@@ -89,41 +111,41 @@ export class DirectorChart extends React.Component<Props> {
           <g style={{ overflow: 'visible' }}>
             {Object.keys(directorData.directorsInfo).map(directorId => {
               const directorInfo = directorData.directorsInfo[directorId];
-              const birthYear =
-                directorInfo.birthYear !== undefined
-                  ? directorInfo.birthYear
-                  : undefined;
-              const deathYear =
-                directorInfo.deathYear !== undefined
-                  ? directorInfo.deathYear
-                  : undefined;
+              const birthYear = directorInfo.birthYear;
+              const deathYear = directorInfo.deathYear;
               return (
                 <g key={directorId}>
                   {birthYear && (
-                    <line
-                      x1={xScale(birthYear)}
-                      x2={xScale(birthYear)}
-                      y1={0}
-                      y2={height}
-                      stroke={'gray'}
-                      strokeWidth={1}
-                    />
+                    <YearText
+                      x={birthYear ? xScale(birthYear) : 0}
+                      y={firstValue ? yScale(firstValue) + 20 : 30}
+                    >
+                      {birthYear}
+                    </YearText>
                   )}
                   <DirectorNameText
-                    x={(birthYear ? xScale(birthYear) : 0) + 10}
-                    y={15}
+                    x={birthYear ? xScale(birthYear) : 0}
+                    y={firstValue ? yScale(firstValue) - 10 : 15}
                   >
-                    {`${directorInfo.name} ${birthYear}-${deathYear}`}
+                    {directorInfo.name}
                   </DirectorNameText>
                   {deathYear && (
-                    <line
-                      x1={xScale(deathYear)}
-                      x2={xScale(deathYear)}
-                      y1={0}
-                      y2={height}
-                      stroke={'gray'}
-                      strokeWidth={1}
-                    />
+                    <g>
+                      <line
+                        x1={xScale(deathYear)}
+                        x2={xScale(deathYear)}
+                        y1={lastValue ? yScale(lastValue) - 10 : 0}
+                        y2={lastValue ? yScale(lastValue) + 10 : height}
+                        stroke={'gray'}
+                        strokeWidth={1}
+                      />
+                      <YearText
+                        x={xScale(deathYear) + 5}
+                        y={lastValue ? yScale(lastValue) + 5 : 15}
+                      >
+                        {deathYear}
+                      </YearText>
+                    </g>
                   )}
                 </g>
               );
@@ -134,7 +156,7 @@ export class DirectorChart extends React.Component<Props> {
               strokeWidth={3}
               stroke="#444"
               fill="transparent"
-              d={lineGenerator(lineChartData.series.sort(sortSeries))!}
+              d={lineGenerator(dataSeries.sort(sortSeries))!}
             />
           </g>
           <g>

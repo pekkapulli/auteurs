@@ -1,11 +1,16 @@
 import { rgb, RGBColor } from 'd3-color';
 import { interpolateHcl } from 'd3-interpolate';
 import { scaleLinear } from 'd3-scale';
+import { values } from 'lodash';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import { StateTree } from '../../reducers/index';
-import { getDirectorData, getLineChartData, getYearExtent } from '../../selectors/index';
+import {
+  getDirectorData,
+  getLineChartData,
+  getYearExtent,
+} from '../../selectors/index';
 import { Directors } from '../../types';
 import { DirectorChart, LineChartData } from './director-chart';
 
@@ -16,7 +21,7 @@ interface PassedProps {
 
 interface StateProps {
   directorData: Directors;
-  lineChartData: {[directorIds: string]: LineChartData};
+  lineChartData: { [directorIds: string]: LineChartData };
   yearExtent: [number, number];
 }
 
@@ -71,7 +76,13 @@ class DirectorChartsPlain extends React.Component<Props> {
       <Main>
         {directorData ? (
           Object.keys(directorData)
-            .filter(directorIds => Object.keys(directorData[directorIds].movies).length >= 3)
+            .filter(
+              directorIds =>
+                values(directorData[directorIds].directorsInfo).filter(
+                  value => value.birthYear,
+                ).length > 0 &&
+                Object.keys(directorData[directorIds].movies).length >= 3,
+            )
             .sort(this.sortDirectorData)
             .map(directorIds => (
               <ChartContainer key={directorIds}>
