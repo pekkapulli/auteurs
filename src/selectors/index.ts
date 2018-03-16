@@ -1,4 +1,4 @@
-import { mapValues, max, uniq, values } from 'lodash';
+import { mapValues, max, min, uniq, values } from 'lodash';
 import { createSelector } from 'reselect';
 import { StateTree } from '../reducers';
 
@@ -30,7 +30,7 @@ export const getYearExtent = createSelector(
     if (xAxisType === 'year') {
       return values(data).reduce<[number, number]>(
         (result, dataForDirectors) => {
-          const min = Math.min(
+          const minYear = Math.min(
             Math.min(
               ...values(dataForDirectors.directorsInfo)
                 .map(
@@ -44,7 +44,7 @@ export const getYearExtent = createSelector(
                 .filter(d => !isNaN(d) && d !== -1),
             ),
           );
-          result[0] = min !== -1 ? Math.min(result[0], min) : result[0];
+          result[0] = minYear !== -1 ? Math.min(result[0], minYear) : result[0];
 
           const maxValue = Math.max(
             Math.max(
@@ -90,16 +90,21 @@ export const getLineChartData = createSelector(
           info => info.deathYear,
         ),
         movieYears,
-        series: movieYears.map(year => {
-          return {
+        series: movieYears.map(year => (
+          {
             value: max(
               values(directorData.movies)
                 .filter(title => title.year === year)
                 .map(title => title.averageRating),
             ),
+            minValue: min(
+              values(directorData.movies)
+                .filter(title => title.year === year)
+                .map(title => title.averageRating),
+            ),
             year,
-          };
-        }),
+          }
+        )),
       };
     }),
 );

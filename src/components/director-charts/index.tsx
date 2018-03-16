@@ -1,5 +1,4 @@
 import { rgb, RGBColor } from 'd3-color';
-import { interpolateHcl } from 'd3-interpolate';
 import { scaleLinear } from 'd3-scale';
 import { values } from 'lodash';
 import * as React from 'react';
@@ -40,6 +39,8 @@ const ChartContainer = styled.div`
   flex-grow: 1;
   flex-direction: row;
   align-items: center;
+  height: 100px;
+  margin-bottom: 5px;
 `;
 
 class DirectorChartsPlain extends React.Component<Props> {
@@ -65,12 +66,14 @@ class DirectorChartsPlain extends React.Component<Props> {
       .domain(yearExtent)
       .range([0, width]);
     const yScale = scaleLinear()
-      .domain([3, 10])
+      .domain([2, 10])
       .range([height, 0]);
     const colorScale = scaleLinear<RGBColor, string>()
-      .domain([0, 10])
-      .interpolate(interpolateHcl)
-      .range([rgb('#237A70'), rgb('#FFCA5A')]);
+      .domain([3, 8])
+      // .interpolate(interpolateHcl)
+      // .range([rgb('#237A70'), rgb('#FFCA5A')]);
+      // .range([rgb('#8D240E'), rgb('#FFCA5A')]);
+      .range([rgb('#7D0021'), rgb('#FFD27A')]);
 
     return (
       <Main>
@@ -88,7 +91,7 @@ class DirectorChartsPlain extends React.Component<Props> {
               <ChartContainer key={directorIds}>
                 <DirectorChart
                   width={width}
-                  height={100}
+                  height={height}
                   xScale={xScale}
                   yScale={yScale}
                   colorScale={colorScale}

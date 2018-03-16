@@ -28,7 +28,7 @@ export const Main = styled.div`
   min-height: 100%;
   width: 100%;
   flex-flow: column;
-  background-color: #333;
+  background-color: #140001;
   ${theme.fontNormal};
 `;
 

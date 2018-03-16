@@ -81,17 +81,25 @@ function getDirectors(ratings: Dictionary<Rating>, crew: Dictionary<Crew>) {
     const crewData = crew[titleId];
     if (crewData) {
       const directorsForTitle = crewData.directors;
-      if (directorsForTitle !== '\\N' && !directors[directorsForTitle]) {
+      const sortedDirectorsForTitle =
+        directorsForTitle !== '\\N'
+          ? directorsForTitle
+              .split(',')
+              .sort()
+              .join(',')
+          : undefined;
+
+      if (sortedDirectorsForTitle !== undefined && !directors[sortedDirectorsForTitle]) {
         const titlesForDirector = groupBy(
           data.crew.data
-            .filter(title => title.directors === directorsForTitle)
+            .filter(title => title.directors === sortedDirectorsForTitle)
             .map(title => {
               const ratingsRow = data.ratings.data.find(
                 rating => title.tconst === rating.tconst,
               );
               return {
                 id: title.tconst!,
-                directorIds: directorsForTitle,
+                directorIds: sortedDirectorsForTitle,
                 averageRating: ratingsRow
                   ? +ratingsRow.averageRating
                   : undefined,
@@ -103,10 +111,10 @@ function getDirectors(ratings: Dictionary<Rating>, crew: Dictionary<Crew>) {
         console.log(
           `${
             Object.keys(titlesForDirector).length
-          } titles for ${directorsForTitle}`,
+          } titles for ${sortedDirectorsForTitle}`,
         );
-        directors[directorsForTitle] = {
-          directorIds: directorsForTitle,
+        directors[sortedDirectorsForTitle] = {
+          directorIds: sortedDirectorsForTitle,
           movies: mapValues(titlesForDirector, titles => titles[0]),
         };
       }
