@@ -89,7 +89,10 @@ function getDirectors(ratings: Dictionary<Rating>, crew: Dictionary<Crew>) {
               .join(',')
           : undefined;
 
-      if (sortedDirectorsForTitle !== undefined && !directors[sortedDirectorsForTitle]) {
+      if (
+        sortedDirectorsForTitle !== undefined &&
+        !directors[sortedDirectorsForTitle]
+      ) {
         const titlesForDirector = groupBy(
           data.crew.data
             .filter(title => title.directors === sortedDirectorsForTitle)

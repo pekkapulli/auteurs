@@ -90,21 +90,19 @@ export const getLineChartData = createSelector(
           info => info.deathYear,
         ),
         movieYears,
-        series: movieYears.map(year => (
-          {
-            value: max(
-              values(directorData.movies)
-                .filter(title => title.year === year)
-                .map(title => title.averageRating),
-            ),
-            minValue: min(
-              values(directorData.movies)
-                .filter(title => title.year === year)
-                .map(title => title.averageRating),
-            ),
-            year,
-          }
-        )),
+        series: movieYears.map(year => ({
+          value: max(
+            values(directorData.movies)
+              .filter(title => title.year === year)
+              .map(title => title.averageRating),
+          ),
+          minValue: min(
+            values(directorData.movies)
+              .filter(title => title.year === year)
+              .map(title => title.averageRating),
+          ),
+          year,
+        })),
       };
     }),
 );
